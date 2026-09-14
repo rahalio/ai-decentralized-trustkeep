@@ -1,0 +1,538 @@
+openapi: 3.0.3
+info:
+  title: Trustkeep
+  version: 0.1.0
+  description: >-
+    Enterprise digital-trust scoreboard linking journey consent hygiene,
+    breach recovery, stale-PII cost burn-down, and monetisation gates.
+  x-product-slug: ai-decentralized-trustkeep
+  x-source: ai-in-decentralized+ai/Accenture-Strategy-DD-GDPR-POV/
+servers:
+  - url: https://api.example.com
+tags:
+  - name: Journeys
+  - name: TrustScores
+  - name: BreachPlaybooks
+  - name: DataHoldingCosts
+  - name: MonetizationGates
+paths:
+  /v1/journeys:
+    get:
+      operationId: listJourneys
+      tags: [Journeys]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Journeys page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeJourney"
+    post:
+      operationId: createJourney
+      tags: [Journeys]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JourneyCreate"
+      responses:
+        "201":
+          description: Journey created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeJourney"
+  /v1/trust-scores:
+    get:
+      operationId: listTrustScores
+      tags: [TrustScores]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+        - name: journeyId
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Trust scores page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeTrustScore"
+  /v1/journeys/{journeyId}/trust-scores:compute:
+    parameters:
+      - name: journeyId
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      operationId: computeTrustScore
+      tags: [TrustScores]
+      security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }]
+      responses:
+        "201":
+          description: Score computed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeTrustScore"
+  /v1/breach-incidents:
+    get:
+      operationId: listBreachIncidents
+      tags: [BreachPlaybooks]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Incidents page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeBreachIncident"
+    post:
+      operationId: openBreachIncident
+      tags: [BreachPlaybooks]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BreachIncidentCreate"
+      responses:
+        "201":
+          description: Incident opened
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeBreachIncident"
+  /v1/breach-incidents/{incidentId}/playbook-runs:
+    parameters:
+      - name: incidentId
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      operationId: startPlaybookRun
+      tags: [BreachPlaybooks]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlaybookRunCreate"
+      responses:
+        "202":
+          description: Playbook started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopePlaybookRun"
+  /v1/data-holding-costs:
+    get:
+      operationId: listDataHoldingCosts
+      tags: [DataHoldingCosts]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Holding costs page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeDataHoldingCost"
+    post:
+      operationId: upsertDataHoldingCost
+      tags: [DataHoldingCosts]
+      security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DataHoldingCostUpsert"
+      responses:
+        "200":
+          description: Cost record upserted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeDataHoldingCost"
+  /v1/monetization-proposals:
+    get:
+      operationId: listMonetizationProposals
+      tags: [MonetizationGates]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Proposals page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeMonetizationProposal"
+    post:
+      operationId: submitMonetizationProposal
+      tags: [MonetizationGates]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MonetizationProposalCreate"
+      responses:
+        "201":
+          description: Proposal submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeMonetizationProposal"
+  /v1/monetization-proposals/{proposalId}/gate-decision:
+    parameters:
+      - name: proposalId
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      operationId: decideMonetizationGate
+      tags: [MonetizationGates]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision:
+                  type: string
+                  enum: [allow, block]
+                rationale: { type: string }
+      responses:
+        "200":
+          description: Gate decided
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeMonetizationProposal"
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Cursor:
+      name: cursor
+      in: query
+      schema: { type: string }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+  responses:
+    Unauthorized:
+      description: Missing or invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    UnprocessableEntity:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+  schemas:
+    ResponseMeta:
+      type: object
+      required: [requestId, timestamp]
+      properties:
+        requestId: { type: string }
+        timestamp: { type: string, format: date-time }
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+
+    Journey:
+      type: object
+      required: [id, name, status]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        status:
+          type: string
+          enum: [draft, active, retired]
+        trustThreshold: { type: number, format: float }
+    JourneyCreate:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        trustThreshold: { type: number, format: float }
+    TrustScore:
+      type: object
+      required: [id, journeyId, score, computedAt]
+      properties:
+        id: { type: string }
+        journeyId: { type: string }
+        score: { type: number, format: float }
+        optInRate: { type: number, format: float }
+        revokeRate: { type: number, format: float }
+        computedAt: { type: string, format: date-time }
+        gateState:
+          type: string
+          enum: [open, blocked]
+    BreachIncident:
+      type: object
+      required: [id, status, detectedAt]
+      properties:
+        id: { type: string }
+        status:
+          type: string
+          enum: [open, notifying, recovered, closed]
+        detectedAt: { type: string, format: date-time }
+        regulatorNotifyDueAt: { type: string, format: date-time }
+        trustDelta: { type: number, format: float }
+    BreachIncidentCreate:
+      type: object
+      required: [detectedAt]
+      properties:
+        detectedAt: { type: string, format: date-time }
+        summary: { type: string }
+    PlaybookRun:
+      type: object
+      required: [id, incidentId, status]
+      properties:
+        id: { type: string }
+        incidentId: { type: string }
+        status:
+          type: string
+          enum: [running, completed, aborted]
+        customerNotifyAt: { type: string, format: date-time }
+    PlaybookRunCreate:
+      type: object
+      required: [playbookKey]
+      properties:
+        playbookKey:
+          type: string
+          enum: [standard_72h, high_sensitivity]
+    DataHoldingCost:
+      type: object
+      required: [id, datasetName, inactiveRecords, annualCostPerRecord]
+      properties:
+        id: { type: string }
+        datasetName: { type: string }
+        inactiveRecords: { type: integer }
+        annualCostPerRecord: { type: number, format: double }
+        estimatedAnnualCost: { type: number, format: double }
+        burnDownTargetRecords: { type: integer }
+    DataHoldingCostUpsert:
+      type: object
+      required: [datasetName, inactiveRecords, annualCostPerRecord]
+      properties:
+        datasetName: { type: string }
+        inactiveRecords: { type: integer }
+        annualCostPerRecord: { type: number, format: double }
+        burnDownTargetRecords: { type: integer }
+    MonetizationProposal:
+      type: object
+      required: [id, journeyId, status]
+      properties:
+        id: { type: string }
+        journeyId: { type: string }
+        status:
+          type: string
+          enum: [submitted, allowed, blocked]
+        involvesThirdPartyShare: { type: boolean }
+        valueProposition: { type: string }
+        decisionRationale: { type: string }
+    MonetizationProposalCreate:
+      type: object
+      required: [journeyId, valueProposition]
+      properties:
+        journeyId: { type: string }
+        involvesThirdPartyShare: { type: boolean }
+        valueProposition: { type: string }
+
+    DataEnvelopeJourney:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/Journey"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopeJourney:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/Journey"
+            nextCursor:
+              type: string
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DataEnvelopeTrustScore:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/TrustScore"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopeTrustScore:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/TrustScore"
+            nextCursor:
+              type: string
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DataEnvelopeBreachIncident:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/BreachIncident"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopeBreachIncident:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/BreachIncident"
+            nextCursor:
+              type: string
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DataEnvelopePlaybookRun:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/PlaybookRun"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopePlaybookRun:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/PlaybookRun"
+            nextCursor:
+              type: string
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DataEnvelopeDataHoldingCost:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/DataHoldingCost"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopeDataHoldingCost:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/DataHoldingCost"
+            nextCursor:
+              type: string
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DataEnvelopeMonetizationProposal:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/MonetizationProposal"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopeMonetizationProposal:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/MonetizationProposal"
+            nextCursor:
+              type: string
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
