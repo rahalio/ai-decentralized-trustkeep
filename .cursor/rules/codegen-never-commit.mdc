@@ -1,0 +1,13 @@
+---
+description: .codegen must never be committed or pushed
+globs:
+  - .codegen/**
+alwaysApply: true
+---
+
+# `.codegen` is local-only
+
+- **Never** stage, commit, or push `.codegen/` (or `**/zero_codegen/`) to GitHub.
+- The tool tree is rehydrated from the scaffold: `/Users/nrahal/@code/zero-apps/zero-apps-codegen-scaffold/.codegen` (or the current team scaffold path).
+- `.gitignore` already excludes `.codegen/` — do not force-add it.
+- After cloning, copy `.codegen` from the scaffold, then run `pnpm codegen:paths`.

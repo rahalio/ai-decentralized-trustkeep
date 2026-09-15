@@ -1,0 +1,120 @@
+openapi: 3.1.0
+info:
+  title: Journeys schemas
+  version: 0.1.0
+  description: Prioritised customer journeys and value-proposition catalogue links.
+paths: {}
+components:
+  schemas:
+    JourneyId:
+      type: string
+      pattern: '^jny_[0-9A-HJKMNP-TV-Z]{26}$'
+    JourneyStatus:
+      type: string
+      enum: [draft, active, retired]
+    JourneyKey:
+      type: string
+      description: Canonical starter journey key (BR-6).
+      enum: [acquire, service, win_back, custom]
+    Journey:
+      type: object
+      required: [id, name, status, journeyKey, trustThreshold, createdAt, updatedAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/JourneyId'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        journeyKey:
+          $ref: '#/components/schemas/JourneyKey'
+        status:
+          $ref: '#/components/schemas/JourneyStatus'
+        trustThreshold:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          description: Score below which monetisation auto-blocks (BR-12).
+        valuePropositions:
+          type: array
+          items:
+            type: string
+          description: Catalogue of consumer value props for data sharing (BR-9).
+        forgetVolumeOpen:
+          type: integer
+          minimum: 0
+          description: Open erasure/forget signal count — display only (BR-10).
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    JourneyCreate:
+      type: object
+      required: [name, journeyKey]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        journeyKey:
+          $ref: '#/components/schemas/JourneyKey'
+        trustThreshold:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          default: 60
+        valuePropositions:
+          type: array
+          items:
+            type: string
+    JourneyUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        status:
+          $ref: '#/components/schemas/JourneyStatus'
+        trustThreshold:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+        valuePropositions:
+          type: array
+          items:
+            type: string
+        forgetVolumeOpen:
+          type: integer
+          minimum: 0
+    JourneyListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Journey'
+        nextCursor:
+          type: string
+    JourneyResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Journey'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    JourneyListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/JourneyListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

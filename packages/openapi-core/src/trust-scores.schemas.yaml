@@ -1,0 +1,103 @@
+openapi: 3.1.0
+info:
+  title: Trust scores schemas
+  version: 0.1.0
+  description: Per-journey trust scores and consent hygiene metrics.
+paths: {}
+components:
+  schemas:
+    TrustScoreId:
+      type: string
+      pattern: '^trs_[0-9A-HJKMNP-TV-Z]{26}$'
+    GateState:
+      type: string
+      enum: [open, blocked]
+    ConsentMetric:
+      type: object
+      required: [optInRate, revokeRate]
+      properties:
+        optInRate:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        revokeRate:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        complaintProxyRate:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Complaint / trust-proxy rate feeding the score.
+    TrustScore:
+      type: object
+      required: [id, journeyId, score, consent, gateState, computedAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/TrustScoreId'
+        journeyId:
+          $ref: ./journeys.schemas.yaml#/components/schemas/JourneyId
+        score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+        consent:
+          $ref: '#/components/schemas/ConsentMetric'
+        gateState:
+          $ref: '#/components/schemas/GateState'
+        periodLabel:
+          type: string
+          description: e.g. 2026-09 monthly OR period.
+        computedAt:
+          type: string
+          format: date-time
+    TrustScoreListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrustScore'
+        nextCursor:
+          type: string
+    TrustScoreResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/TrustScore'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    TrustScoreListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/TrustScoreListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    ComputeTrustScoreRequest:
+      type: object
+      properties:
+        periodLabel:
+          type: string
+        optInRate:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        revokeRate:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        complaintProxyRate:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1

@@ -1,0 +1,96 @@
+openapi: 3.1.0
+info:
+  title: Monetization gates schemas
+  version: 0.1.0
+  description: Monetisation proposals and trust-and-permission gate decisions.
+paths: {}
+components:
+  schemas:
+    MonetizationProposalId:
+      type: string
+      pattern: '^mnz_[0-9A-HJKMNP-TV-Z]{26}$'
+    MonetizationProposalStatus:
+      type: string
+      enum: [submitted, allowed, blocked]
+    GateDecision:
+      type: string
+      enum: [allow, block]
+    MonetizationProposal:
+      type: object
+      required: [id, journeyId, status, valueProposition, involvesThirdPartyShare, createdAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/MonetizationProposalId'
+        journeyId:
+          $ref: ./journeys.schemas.yaml#/components/schemas/JourneyId
+        status:
+          $ref: '#/components/schemas/MonetizationProposalStatus'
+        involvesThirdPartyShare:
+          type: boolean
+        valueProposition:
+          type: string
+          minLength: 1
+          maxLength: 500
+        decisionRationale:
+          type: string
+          maxLength: 1000
+        autoBlocked:
+          type: boolean
+          description: True when blocked by trust threshold (BR-12).
+        trustScoreAtDecision:
+          type: number
+          format: float
+        createdAt:
+          type: string
+          format: date-time
+        decidedAt:
+          type: string
+          format: date-time
+    MonetizationProposalCreate:
+      type: object
+      required: [journeyId, valueProposition]
+      properties:
+        journeyId:
+          $ref: ./journeys.schemas.yaml#/components/schemas/JourneyId
+        involvesThirdPartyShare:
+          type: boolean
+          default: false
+        valueProposition:
+          type: string
+          minLength: 1
+          maxLength: 500
+    GateDecisionRequest:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          $ref: '#/components/schemas/GateDecision'
+        rationale:
+          type: string
+          maxLength: 1000
+    MonetizationProposalListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonetizationProposal'
+        nextCursor:
+          type: string
+    MonetizationProposalResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/MonetizationProposal'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    MonetizationProposalListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/MonetizationProposalListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

@@ -1,0 +1,113 @@
+openapi: 3.1.0
+info:
+  title: Platform risks API
+  version: 0.1.0
+  description: |
+    Exclusion risk from digital platforms due to weak ethical/security controls (BR-8).
+  license:
+    name: Proprietary
+    url: https://trustkeep.local/license
+  x-domain: prk
+servers:
+  - url: https://api.trustkeep.local
+security:
+  - apiKey: []
+  - bearerAuth: []
+tags:
+  - name: PlatformRisks
+    description: Platform exclusion risk register
+paths:
+  /v1/platform-risks:
+    get:
+      operationId: listPlatformRisks
+      tags: [PlatformRisks]
+      summary: List platform exclusion risks
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+      responses:
+        '200':
+          description: Risks page
+          content:
+            application/json:
+              schema:
+                $ref: ./platform-risks.schemas.yaml#/components/schemas/PlatformRiskListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createPlatformRisk
+      tags: [PlatformRisks]
+      summary: Create a platform risk item
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./platform-risks.schemas.yaml#/components/schemas/PlatformRiskCreate
+      responses:
+        '201':
+          description: Risk created
+          content:
+            application/json:
+              schema:
+                $ref: ./platform-risks.schemas.yaml#/components/schemas/PlatformRiskResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/platform-risks/{riskId}:
+    parameters:
+      - name: riskId
+        in: path
+        required: true
+        schema:
+          $ref: ./platform-risks.schemas.yaml#/components/schemas/PlatformRiskId
+    get:
+      operationId: getPlatformRisk
+      tags: [PlatformRisks]
+      summary: Get platform risk by id
+      responses:
+        '200':
+          description: Platform risk
+          content:
+            application/json:
+              schema:
+                $ref: ./platform-risks.schemas.yaml#/components/schemas/PlatformRiskResponse
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    patch:
+      operationId: updatePlatformRisk
+      tags: [PlatformRisks]
+      summary: Update platform risk status / mitigation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./platform-risks.schemas.yaml#/components/schemas/PlatformRiskUpdate
+      responses:
+        '200':
+          description: Risk updated
+          content:
+            application/json:
+              schema:
+                $ref: ./platform-risks.schemas.yaml#/components/schemas/PlatformRiskResponse
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey
+    bearerAuth:
+      $ref: ./common/security.yaml#/components/securitySchemes/bearerAuth
+

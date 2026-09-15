@@ -1,0 +1,108 @@
+openapi: 3.1.0
+info:
+  title: Trust scores API
+  version: 0.1.0
+  description: |
+    Per-journey trust scoring and consent hygiene indicators (BR-1, BR-5, BR-12).
+  license:
+    name: Proprietary
+    url: https://trustkeep.local/license
+  x-domain: trs
+servers:
+  - url: https://api.trustkeep.local
+security:
+  - apiKey: []
+  - bearerAuth: []
+tags:
+  - name: TrustScores
+    description: Journey trust scores
+paths:
+  /v1/trust-scores:
+    get:
+      operationId: listTrustScores
+      tags: [TrustScores]
+      summary: List trust scores
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+        - name: journeyId
+          in: query
+          schema:
+            $ref: ./journeys.schemas.yaml#/components/schemas/JourneyId
+      responses:
+        '200':
+          description: Trust scores page
+          content:
+            application/json:
+              schema:
+                $ref: ./trust-scores.schemas.yaml#/components/schemas/TrustScoreListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/journeys/{journeyId}/trust-scores:compute:
+    parameters:
+      - name: journeyId
+        in: path
+        required: true
+        schema:
+          $ref: ./journeys.schemas.yaml#/components/schemas/JourneyId
+    post:
+      operationId: computeTrustScore
+      tags: [TrustScores]
+      summary: Compute trust score for a journey
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: ./trust-scores.schemas.yaml#/components/schemas/ComputeTrustScoreRequest
+      responses:
+        '201':
+          description: Score computed
+          content:
+            application/json:
+              schema:
+                $ref: ./trust-scores.schemas.yaml#/components/schemas/TrustScoreResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/trust-scores/{trustScoreId}:
+    parameters:
+      - name: trustScoreId
+        in: path
+        required: true
+        schema:
+          $ref: ./trust-scores.schemas.yaml#/components/schemas/TrustScoreId
+    get:
+      operationId: getTrustScore
+      tags: [TrustScores]
+      summary: Get trust score by id
+      responses:
+        '200':
+          description: Trust score
+          content:
+            application/json:
+              schema:
+                $ref: ./trust-scores.schemas.yaml#/components/schemas/TrustScoreResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey
+    bearerAuth:
+      $ref: ./common/security.yaml#/components/securitySchemes/bearerAuth
+

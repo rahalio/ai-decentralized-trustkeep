@@ -1,0 +1,92 @@
+openapi: 3.1.0
+info:
+  title: Data holding costs API
+  version: 0.1.0
+  description: |
+    Stale/inactive PII holding cost inventory with burn-down targets (BR-3).
+  license:
+    name: Proprietary
+    url: https://trustkeep.local/license
+  x-domain: dhc
+servers:
+  - url: https://api.trustkeep.local
+security:
+  - apiKey: []
+  - bearerAuth: []
+tags:
+  - name: DataHoldingCosts
+    description: Holding cost cohorts and burn-down
+paths:
+  /v1/data-holding-costs:
+    get:
+      operationId: listDataHoldingCosts
+      tags: [DataHoldingCosts]
+      summary: List holding cost records
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+      responses:
+        '200':
+          description: Holding costs page
+          content:
+            application/json:
+              schema:
+                $ref: ./data-holding-costs.schemas.yaml#/components/schemas/DataHoldingCostListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: upsertDataHoldingCost
+      tags: [DataHoldingCosts]
+      summary: Upsert a holding cost cohort
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./data-holding-costs.schemas.yaml#/components/schemas/DataHoldingCostUpsert
+      responses:
+        '200':
+          description: Cost record upserted
+          content:
+            application/json:
+              schema:
+                $ref: ./data-holding-costs.schemas.yaml#/components/schemas/DataHoldingCostResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/data-holding-costs/{costId}:
+    parameters:
+      - name: costId
+        in: path
+        required: true
+        schema:
+          $ref: ./data-holding-costs.schemas.yaml#/components/schemas/DataHoldingCostId
+    get:
+      operationId: getDataHoldingCost
+      tags: [DataHoldingCosts]
+      summary: Get holding cost by id
+      responses:
+        '200':
+          description: Holding cost
+          content:
+            application/json:
+              schema:
+                $ref: ./data-holding-costs.schemas.yaml#/components/schemas/DataHoldingCostResponse
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey
+    bearerAuth:
+      $ref: ./common/security.yaml#/components/securitySchemes/bearerAuth
+

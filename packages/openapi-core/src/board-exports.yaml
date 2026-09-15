@@ -1,0 +1,92 @@
+openapi: 3.1.0
+info:
+  title: Board exports API
+  version: 0.1.0
+  description: |
+    Executive / board narrative packs without raw PII (BR-11).
+  license:
+    name: Proprietary
+    url: https://trustkeep.local/license
+  x-domain: bxp
+servers:
+  - url: https://api.trustkeep.local
+security:
+  - apiKey: []
+  - bearerAuth: []
+tags:
+  - name: BoardExports
+    description: Board and regulator export packs
+paths:
+  /v1/board-exports:
+    get:
+      operationId: listBoardExports
+      tags: [BoardExports]
+      summary: List board export packs
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+      responses:
+        '200':
+          description: Exports page
+          content:
+            application/json:
+              schema:
+                $ref: ./board-exports.schemas.yaml#/components/schemas/BoardExportListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createBoardExport
+      tags: [BoardExports]
+      summary: Generate a board export pack
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./board-exports.schemas.yaml#/components/schemas/BoardExportCreate
+      responses:
+        '201':
+          description: Pack generation started / ready
+          content:
+            application/json:
+              schema:
+                $ref: ./board-exports.schemas.yaml#/components/schemas/BoardExportResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/board-exports/{exportId}:
+    parameters:
+      - name: exportId
+        in: path
+        required: true
+        schema:
+          $ref: ./board-exports.schemas.yaml#/components/schemas/BoardExportId
+    get:
+      operationId: getBoardExport
+      tags: [BoardExports]
+      summary: Get board export by id
+      responses:
+        '200':
+          description: Board export
+          content:
+            application/json:
+              schema:
+                $ref: ./board-exports.schemas.yaml#/components/schemas/BoardExportResponse
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey
+    bearerAuth:
+      $ref: ./common/security.yaml#/components/securitySchemes/bearerAuth
+

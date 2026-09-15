@@ -1,0 +1,153 @@
+openapi: 3.1.0
+info:
+  title: Breach playbooks schemas
+  version: 0.1.0
+  description: Breach incidents and timed trust-recovery playbook runs.
+paths: {}
+components:
+  schemas:
+    BreachIncidentId:
+      type: string
+      pattern: '^brc_[0-9A-HJKMNP-TV-Z]{26}$'
+    PlaybookRunId:
+      type: string
+      pattern: '^pbr_[0-9A-HJKMNP-TV-Z]{26}$'
+    BreachIncidentStatus:
+      type: string
+      enum: [open, notifying, recovered, closed]
+    PlaybookRunStatus:
+      type: string
+      enum: [running, completed, aborted]
+    PlaybookKey:
+      type: string
+      enum: [standard_72h, high_sensitivity]
+    BreachIncident:
+      type: object
+      required: [id, status, detectedAt, createdAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/BreachIncidentId'
+        status:
+          $ref: '#/components/schemas/BreachIncidentStatus'
+        summary:
+          type: string
+          maxLength: 500
+        detectedAt:
+          type: string
+          format: date-time
+        regulatorNotifyDueAt:
+          type: string
+          format: date-time
+          description: 72-hour regulatory notice deadline (BR-2).
+        customerNotifyDueAt:
+          type: string
+          format: date-time
+        trustDelta:
+          type: number
+          format: float
+          description: Post-incident trust delta when proxies exist.
+        createdAt:
+          type: string
+          format: date-time
+    BreachIncidentCreate:
+      type: object
+      required: [detectedAt]
+      properties:
+        detectedAt:
+          type: string
+          format: date-time
+        summary:
+          type: string
+          maxLength: 500
+    PlaybookRun:
+      type: object
+      required: [id, incidentId, playbookKey, status, startedAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/PlaybookRunId'
+        incidentId:
+          $ref: '#/components/schemas/BreachIncidentId'
+        playbookKey:
+          $ref: '#/components/schemas/PlaybookKey'
+        status:
+          $ref: '#/components/schemas/PlaybookRunStatus'
+        startedAt:
+          type: string
+          format: date-time
+        regulatorNotifiedAt:
+          type: string
+          format: date-time
+        customerNotifiedAt:
+          type: string
+          format: date-time
+        trustDeltaRecorded:
+          type: number
+          format: float
+        completedAt:
+          type: string
+          format: date-time
+    PlaybookRunCreate:
+      type: object
+      required: [playbookKey]
+      properties:
+        playbookKey:
+          $ref: '#/components/schemas/PlaybookKey'
+    RecordTrustDeltaRequest:
+      type: object
+      required: [trustDelta]
+      properties:
+        trustDelta:
+          type: number
+          format: float
+    BreachIncidentListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BreachIncident'
+        nextCursor:
+          type: string
+    PlaybookRunListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlaybookRun'
+        nextCursor:
+          type: string
+    BreachIncidentResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/BreachIncident'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    BreachIncidentListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/BreachIncidentListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    PlaybookRunResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/PlaybookRun'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    PlaybookRunListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/PlaybookRunListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

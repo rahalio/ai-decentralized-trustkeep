@@ -1,0 +1,96 @@
+openapi: 3.1.0
+info:
+  title: Decision logs API
+  version: 0.1.0
+  description: |
+    Cross-functional decision logs attachable to trust actions (BR-6, BR-7).
+  license:
+    name: Proprietary
+    url: https://trustkeep.local/license
+  x-domain: dlg
+servers:
+  - url: https://api.trustkeep.local
+security:
+  - apiKey: []
+  - bearerAuth: []
+tags:
+  - name: DecisionLogs
+    description: Compliance / business / technology decisions
+paths:
+  /v1/decision-logs:
+    get:
+      operationId: listDecisionLogs
+      tags: [DecisionLogs]
+      summary: List decision logs
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+        - name: journeyId
+          in: query
+          schema:
+            $ref: ./journeys.schemas.yaml#/components/schemas/JourneyId
+      responses:
+        '200':
+          description: Decision logs page
+          content:
+            application/json:
+              schema:
+                $ref: ./decision-logs.schemas.yaml#/components/schemas/DecisionLogListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createDecisionLog
+      tags: [DecisionLogs]
+      summary: Create a decision log entry
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./decision-logs.schemas.yaml#/components/schemas/DecisionLogCreate
+      responses:
+        '201':
+          description: Decision logged
+          content:
+            application/json:
+              schema:
+                $ref: ./decision-logs.schemas.yaml#/components/schemas/DecisionLogResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/decision-logs/{decisionId}:
+    parameters:
+      - name: decisionId
+        in: path
+        required: true
+        schema:
+          $ref: ./decision-logs.schemas.yaml#/components/schemas/DecisionLogId
+    get:
+      operationId: getDecisionLog
+      tags: [DecisionLogs]
+      summary: Get decision log by id
+      responses:
+        '200':
+          description: Decision log
+          content:
+            application/json:
+              schema:
+                $ref: ./decision-logs.schemas.yaml#/components/schemas/DecisionLogResponse
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey
+    bearerAuth:
+      $ref: ./common/security.yaml#/components/securitySchemes/bearerAuth
+

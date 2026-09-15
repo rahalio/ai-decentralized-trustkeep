@@ -1,0 +1,98 @@
+openapi: 3.1.0
+info:
+  title: Data holding costs schemas
+  version: 0.1.0
+  description: Stale-PII holding cost inventory and burn-down targets.
+paths: {}
+components:
+  schemas:
+    DataHoldingCostId:
+      type: string
+      pattern: '^dhc_[0-9A-HJKMNP-TV-Z]{26}$'
+    DataHoldingCost:
+      type: object
+      required:
+        - id
+        - datasetName
+        - inactiveRecords
+        - annualCostPerRecord
+        - estimatedAnnualCost
+        - updatedAt
+      properties:
+        id:
+          $ref: '#/components/schemas/DataHoldingCostId'
+        datasetName:
+          type: string
+          minLength: 1
+          maxLength: 160
+        inactiveRecords:
+          type: integer
+          minimum: 0
+        annualCostPerRecord:
+          type: number
+          format: double
+          description: Configurable $/record/year (default 1.50) (BR-3).
+        estimatedAnnualCost:
+          type: number
+          format: double
+        burnDownTargetRecords:
+          type: integer
+          minimum: 0
+        cleansedRecords:
+          type: integer
+          minimum: 0
+          description: Records queued or cleansed toward burn-down.
+        currency:
+          $ref: ./common/primitives.yaml#/components/schemas/Currency
+        updatedAt:
+          type: string
+          format: date-time
+    DataHoldingCostUpsert:
+      type: object
+      required: [datasetName, inactiveRecords, annualCostPerRecord]
+      properties:
+        datasetName:
+          type: string
+          minLength: 1
+          maxLength: 160
+        inactiveRecords:
+          type: integer
+          minimum: 0
+        annualCostPerRecord:
+          type: number
+          format: double
+          default: 1.5
+        burnDownTargetRecords:
+          type: integer
+          minimum: 0
+        cleansedRecords:
+          type: integer
+          minimum: 0
+        currency:
+          $ref: ./common/primitives.yaml#/components/schemas/Currency
+    DataHoldingCostListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataHoldingCost'
+        nextCursor:
+          type: string
+    DataHoldingCostResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/DataHoldingCost'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    DataHoldingCostListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/DataHoldingCostListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

@@ -1,0 +1,119 @@
+openapi: 3.1.0
+info:
+  title: Platform risks schemas
+  version: 0.1.0
+  description: Digital platform exclusion risk register.
+paths: {}
+components:
+  schemas:
+    PlatformRiskId:
+      type: string
+      pattern: '^prk_[0-9A-HJKMNP-TV-Z]{26}$'
+    PlatformRiskStatus:
+      type: string
+      enum: [monitored_clear, watch, escalate, mitigated]
+    PlatformRiskSeverity:
+      type: string
+      enum: [low, medium, high, critical]
+    PlatformRisk:
+      type: object
+      required: [id, title, status, severity, owner, createdAt, updatedAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/PlatformRiskId'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 2000
+        status:
+          $ref: '#/components/schemas/PlatformRiskStatus'
+        severity:
+          $ref: '#/components/schemas/PlatformRiskSeverity'
+        owner:
+          type: string
+          minLength: 1
+          maxLength: 120
+        mitigationNotes:
+          type: string
+          maxLength: 2000
+        linkedJourneyId:
+          $ref: ./journeys.schemas.yaml#/components/schemas/JourneyId
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    PlatformRiskCreate:
+      type: object
+      required: [title, severity, owner]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 2000
+        severity:
+          $ref: '#/components/schemas/PlatformRiskSeverity'
+        owner:
+          type: string
+          minLength: 1
+          maxLength: 120
+        status:
+          $ref: '#/components/schemas/PlatformRiskStatus'
+        linkedJourneyId:
+          $ref: ./journeys.schemas.yaml#/components/schemas/JourneyId
+    PlatformRiskUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 2000
+        status:
+          $ref: '#/components/schemas/PlatformRiskStatus'
+        severity:
+          $ref: '#/components/schemas/PlatformRiskSeverity'
+        owner:
+          type: string
+          minLength: 1
+          maxLength: 120
+        mitigationNotes:
+          type: string
+          maxLength: 2000
+        linkedJourneyId:
+          $ref: ./journeys.schemas.yaml#/components/schemas/JourneyId
+    PlatformRiskListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformRisk'
+        nextCursor:
+          type: string
+    PlatformRiskResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/PlatformRisk'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    PlatformRiskListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/PlatformRiskListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

@@ -1,0 +1,106 @@
+openapi: 3.1.0
+info:
+  title: Board exports schemas
+  version: 0.1.0
+  description: Board / regulator narrative packs without raw PII.
+paths: {}
+components:
+  schemas:
+    BoardExportId:
+      type: string
+      pattern: '^bxp_[0-9A-HJKMNP-TV-Z]{26}$'
+    BoardExportStatus:
+      type: string
+      enum: [pending, ready, failed]
+    BoardExport:
+      type: object
+      required: [id, periodLabel, status, createdAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/BoardExportId'
+        periodLabel:
+          type: string
+          description: e.g. 2026-09 monthly operating review.
+        status:
+          $ref: '#/components/schemas/BoardExportStatus'
+        journeyIds:
+          type: array
+          items:
+            $ref: ./journeys.schemas.yaml#/components/schemas/JourneyId
+        includeGates:
+          type: boolean
+          default: true
+        includeBreachRecovery:
+          type: boolean
+          default: true
+        includeHoldingCosts:
+          type: boolean
+          default: true
+        includePlatformRisks:
+          type: boolean
+          default: true
+        downloadUrl:
+          type: string
+          format: uri
+          description: Time-boxed share link; never includes raw PII (BR-11).
+        gapJourneyIds:
+          type: array
+          items:
+            $ref: ./journeys.schemas.yaml#/components/schemas/JourneyId
+          description: Journeys incomplete for the pack.
+        createdAt:
+          type: string
+          format: date-time
+        readyAt:
+          type: string
+          format: date-time
+    BoardExportCreate:
+      type: object
+      required: [periodLabel]
+      properties:
+        periodLabel:
+          type: string
+          minLength: 1
+          maxLength: 64
+        journeyIds:
+          type: array
+          items:
+            $ref: ./journeys.schemas.yaml#/components/schemas/JourneyId
+        includeGates:
+          type: boolean
+          default: true
+        includeBreachRecovery:
+          type: boolean
+          default: true
+        includeHoldingCosts:
+          type: boolean
+          default: true
+        includePlatformRisks:
+          type: boolean
+          default: true
+    BoardExportListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BoardExport'
+        nextCursor:
+          type: string
+    BoardExportResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/BoardExport'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    BoardExportListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/BoardExportListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

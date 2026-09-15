@@ -1,0 +1,131 @@
+openapi: 3.1.0
+info:
+  title: Monetization gates API
+  version: 0.1.0
+  description: |
+    Trust-and-permission gates for third-party sharing / monetisation (BR-4, BR-12).
+  license:
+    name: Proprietary
+    url: https://trustkeep.local/license
+  x-domain: mnz
+servers:
+  - url: https://api.trustkeep.local
+security:
+  - apiKey: []
+  - bearerAuth: []
+tags:
+  - name: MonetizationGates
+    description: Monetisation proposals and gate decisions
+paths:
+  /v1/monetization-proposals:
+    get:
+      operationId: listMonetizationProposals
+      tags: [MonetizationGates]
+      summary: List monetisation proposals
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+        - name: journeyId
+          in: query
+          schema:
+            $ref: ./journeys.schemas.yaml#/components/schemas/JourneyId
+        - name: status
+          in: query
+          schema:
+            $ref: ./monetization-gates.schemas.yaml#/components/schemas/MonetizationProposalStatus
+      responses:
+        '200':
+          description: Proposals page
+          content:
+            application/json:
+              schema:
+                $ref: ./monetization-gates.schemas.yaml#/components/schemas/MonetizationProposalListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: submitMonetizationProposal
+      tags: [MonetizationGates]
+      summary: Submit a monetisation proposal
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./monetization-gates.schemas.yaml#/components/schemas/MonetizationProposalCreate
+      responses:
+        '201':
+          description: Proposal submitted (may be auto-blocked)
+          content:
+            application/json:
+              schema:
+                $ref: ./monetization-gates.schemas.yaml#/components/schemas/MonetizationProposalResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/monetization-proposals/{proposalId}:
+    parameters:
+      - name: proposalId
+        in: path
+        required: true
+        schema:
+          $ref: ./monetization-gates.schemas.yaml#/components/schemas/MonetizationProposalId
+    get:
+      operationId: getMonetizationProposal
+      tags: [MonetizationGates]
+      summary: Get proposal by id
+      responses:
+        '200':
+          description: Proposal
+          content:
+            application/json:
+              schema:
+                $ref: ./monetization-gates.schemas.yaml#/components/schemas/MonetizationProposalResponse
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/monetization-proposals/{proposalId}/gate-decision:
+    parameters:
+      - name: proposalId
+        in: path
+        required: true
+        schema:
+          $ref: ./monetization-gates.schemas.yaml#/components/schemas/MonetizationProposalId
+    post:
+      operationId: decideMonetizationGate
+      tags: [MonetizationGates]
+      summary: Approve or block a monetisation proposal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./monetization-gates.schemas.yaml#/components/schemas/GateDecisionRequest
+      responses:
+        '200':
+          description: Gate decided
+          content:
+            application/json:
+              schema:
+                $ref: ./monetization-gates.schemas.yaml#/components/schemas/MonetizationProposalResponse
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '422':
+          $ref: ./common/responses.yaml#/components/responses/UnprocessableEntity
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey
+    bearerAuth:
+      $ref: ./common/security.yaml#/components/securitySchemes/bearerAuth
+

@@ -1,0 +1,167 @@
+openapi: 3.1.0
+info:
+  title: Breach playbooks API
+  version: 0.1.0
+  description: |
+    Breach trust-recovery playbooks with 72-hour regulatory and customer tracks (BR-2).
+  license:
+    name: Proprietary
+    url: https://trustkeep.local/license
+  x-domain: brc
+servers:
+  - url: https://api.trustkeep.local
+security:
+  - apiKey: []
+  - bearerAuth: []
+tags:
+  - name: BreachPlaybooks
+    description: Incidents and recovery playbook runs
+paths:
+  /v1/breach-incidents:
+    get:
+      operationId: listBreachIncidents
+      tags: [BreachPlaybooks]
+      summary: List breach incidents
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+      responses:
+        '200':
+          description: Incidents page
+          content:
+            application/json:
+              schema:
+                $ref: ./breach-playbooks.schemas.yaml#/components/schemas/BreachIncidentListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: openBreachIncident
+      tags: [BreachPlaybooks]
+      summary: Open a breach incident
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./breach-playbooks.schemas.yaml#/components/schemas/BreachIncidentCreate
+      responses:
+        '201':
+          description: Incident opened
+          content:
+            application/json:
+              schema:
+                $ref: ./breach-playbooks.schemas.yaml#/components/schemas/BreachIncidentResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/breach-incidents/{incidentId}:
+    parameters:
+      - name: incidentId
+        in: path
+        required: true
+        schema:
+          $ref: ./breach-playbooks.schemas.yaml#/components/schemas/BreachIncidentId
+    get:
+      operationId: getBreachIncident
+      tags: [BreachPlaybooks]
+      summary: Get breach incident
+      responses:
+        '200':
+          description: Incident
+          content:
+            application/json:
+              schema:
+                $ref: ./breach-playbooks.schemas.yaml#/components/schemas/BreachIncidentResponse
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/breach-incidents/{incidentId}/playbook-runs:
+    parameters:
+      - name: incidentId
+        in: path
+        required: true
+        schema:
+          $ref: ./breach-playbooks.schemas.yaml#/components/schemas/BreachIncidentId
+    get:
+      operationId: listPlaybookRuns
+      tags: [BreachPlaybooks]
+      summary: List playbook runs for an incident
+      responses:
+        '200':
+          description: Playbook runs
+          content:
+            application/json:
+              schema:
+                $ref: ./breach-playbooks.schemas.yaml#/components/schemas/PlaybookRunListResponse
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: startPlaybookRun
+      tags: [BreachPlaybooks]
+      summary: Start a recovery playbook
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./breach-playbooks.schemas.yaml#/components/schemas/PlaybookRunCreate
+      responses:
+        '202':
+          description: Playbook started
+          content:
+            application/json:
+              schema:
+                $ref: ./breach-playbooks.schemas.yaml#/components/schemas/PlaybookRunResponse
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/playbook-runs/{runId}/trust-delta:
+    parameters:
+      - name: runId
+        in: path
+        required: true
+        schema:
+          $ref: ./breach-playbooks.schemas.yaml#/components/schemas/PlaybookRunId
+    post:
+      operationId: recordPlaybookTrustDelta
+      tags: [BreachPlaybooks]
+      summary: Record post-incident trust delta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./breach-playbooks.schemas.yaml#/components/schemas/RecordTrustDeltaRequest
+      responses:
+        '200':
+          description: Trust delta recorded
+          content:
+            application/json:
+              schema:
+                $ref: ./breach-playbooks.schemas.yaml#/components/schemas/PlaybookRunResponse
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey
+    bearerAuth:
+      $ref: ./common/security.yaml#/components/securitySchemes/bearerAuth
+

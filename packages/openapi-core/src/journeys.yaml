@@ -1,0 +1,120 @@
+openapi: 3.1.0
+info:
+  title: Journeys API
+  version: 0.1.0
+  description: |
+    Prioritised customer journeys for the Trustkeep scoreboard (BR-1, BR-5, BR-6, BR-9).
+  license:
+    name: Proprietary
+    url: https://trustkeep.local/license
+  x-domain: jny
+servers:
+  - url: https://api.trustkeep.local
+    description: Local / Trustkeep API
+security:
+  - apiKey: []
+  - bearerAuth: []
+tags:
+  - name: Journeys
+    description: Journey workstreams (acquire / service / win-back)
+paths:
+  /v1/journeys:
+    get:
+      operationId: listJourneys
+      tags: [Journeys]
+      summary: List journeys
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+      responses:
+        '200':
+          description: Journeys page
+          content:
+            application/json:
+              schema:
+                $ref: ./journeys.schemas.yaml#/components/schemas/JourneyListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createJourney
+      tags: [Journeys]
+      summary: Create a journey
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./journeys.schemas.yaml#/components/schemas/JourneyCreate
+      responses:
+        '201':
+          description: Journey created
+          content:
+            application/json:
+              schema:
+                $ref: ./journeys.schemas.yaml#/components/schemas/JourneyResponse
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/journeys/{journeyId}:
+    parameters:
+      - name: journeyId
+        in: path
+        required: true
+        schema:
+          $ref: ./journeys.schemas.yaml#/components/schemas/JourneyId
+    get:
+      operationId: getJourney
+      tags: [Journeys]
+      summary: Get journey by id
+      responses:
+        '200':
+          description: Journey
+          content:
+            application/json:
+              schema:
+                $ref: ./journeys.schemas.yaml#/components/schemas/JourneyResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    patch:
+      operationId: updateJourney
+      tags: [Journeys]
+      summary: Update journey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./journeys.schemas.yaml#/components/schemas/JourneyUpdate
+      responses:
+        '200':
+          description: Journey updated
+          content:
+            application/json:
+              schema:
+                $ref: ./journeys.schemas.yaml#/components/schemas/JourneyResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey
+    bearerAuth:
+      $ref: ./common/security.yaml#/components/securitySchemes/bearerAuth
+

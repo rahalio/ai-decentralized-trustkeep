@@ -1,0 +1,36 @@
+apis:
+  identity:
+    root: src/identity.yaml
+  journeys:
+    root: src/journeys.yaml
+  trust-scores:
+    root: src/trust-scores.yaml
+  breach-playbooks:
+    root: src/breach-playbooks.yaml
+  data-holding-costs:
+    root: src/data-holding-costs.yaml
+  monetization-gates:
+    root: src/monetization-gates.yaml
+  decision-logs:
+    root: src/decision-logs.yaml
+  board-exports:
+    root: src/board-exports.yaml
+  platform-risks:
+    root: src/platform-risks.yaml
+
+extends:
+  - recommended
+
+rules:
+  no-unused-components: off
+  operation-4xx-response: warn
+  info-license: off
+  info-license-url: off
+  tag-description: off
+  operation-operationId: error
+  no-invalid-media-type-examples: off
+
+theme:
+  openapi:
+    generateCodeSamples:
+      languages: []
